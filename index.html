@@ -3,470 +3,944 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>스마트 회의록</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 36px;
+    }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 20px;
     }
 
     .container {
-      max-width: 600px;
-      margin: 0 auto;
+      width: 100%;
+      min-height: 100vh;
       background: white;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
     }
 
-    h1 { text-align: center; color: #2563eb; margin-bottom: 30px; font-size: 32px; }
-
-    .form-group { margin-bottom: 20px; }
-
-    label { display: block; font-weight: 600; margin-bottom: 8px; color: #374151; font-size: 18px; }
-
-    input, textarea {
-      width: 100%; padding: 12px;
-      border: 2px solid #e5e7eb; border-radius: 8px;
-      font-size: 16px; font-family: inherit;
+    .header {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      padding: 72px 52px;
+      text-align: center;
+      flex-shrink: 0;
     }
 
-    textarea { min-height: 100px; resize: vertical; }
-
-    .btn {
-      width: 100%; padding: 15px; border: none; border-radius: 10px;
-      font-size: 18px; font-weight: 600; cursor: pointer; margin-top: 10px;
-    }
-    .btn-primary { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; }
-    .btn-danger { background: #ef4444; color: white; }
-    .btn-warning { background: #f59e0b; color: white; }
-
-    .recording-status {
-      background: #f9fafb; border-radius: 12px; padding: 30px;
-      text-align: center; margin: 20px 0; display: none;
-    }
-    .recording-status.active { display: block; }
-
-    .timer { font-size: 48px; font-weight: 700; color: #2563eb; margin: 20px 0; }
-
-    .recording-dot {
-      display: inline-block; width: 12px; height: 12px;
-      background: #ef4444; border-radius: 50%;
-      animation: pulse 1.5s infinite; margin-right: 10px;
+    .header h1 {
+      font-size: 80px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.2;
     }
 
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-    .hidden { display: none; }
-
-    .result {
-      background: #f9fafb; border-radius: 12px; padding: 20px;
-      margin-top: 20px; white-space: pre-wrap;
-      max-height: 400px; overflow-y: auto;
+    .header p {
+      font-size: 40px;
+      opacity: 0.95;
     }
 
-    .loading { text-align: center; padding: 40px; }
-
-    .spinner {
-      border: 4px solid #f3f4f6; border-top: 4px solid #2563eb;
-      border-radius: 50%; width: 40px; height: 40px;
-      animation: spin 1s linear infinite; margin: 0 auto 20px;
+    .content {
+      flex: 1;
+      padding: 56px 52px;
+      overflow-y: auto;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* 복구 배너 */
-    .recovery-banner {
-      background: #fef3c7; border: 2px solid #f59e0b;
-      border-radius: 12px; padding: 20px; margin-bottom: 20px;
+    .step {
       display: none;
     }
-    .recovery-banner.show { display: block; }
-    .recovery-banner h3 { color: #92400e; margin-bottom: 10px; }
-    .recovery-banner p { color: #78350f; margin-bottom: 15px; font-size: 14px; }
-    .recovery-buttons { display: flex; gap: 10px; }
-    .recovery-buttons .btn { margin-top: 0; font-size: 15px; padding: 10px; }
 
-    /* 저장 상태 표시 */
-    .save-indicator {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #10b981; color: white;
-      padding: 8px 16px; border-radius: 20px;
-      font-size: 13px; font-weight: 600;
-      opacity: 0; transition: opacity 0.3s;
+    .step.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 56px;
+    }
+
+    label {
+      display: block;
+      font-size: 44px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 24px;
+      line-height: 1.3;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    textarea {
+      width: 100%;
+      padding: 40px 36px;
+      border: 6px solid #e5e7eb;
+      border-radius: 26px;
+      font-size: 40px;
+      font-family: inherit;
+      background: white;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.12);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 280px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 44px 52px;
+      border: none;
+      border-radius: 28px;
+      font-size: 44px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 28px;
+      -webkit-appearance: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .recording-status {
+      background: #f9fafb;
+      border-radius: 36px;
+      padding: 72px 52px;
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .timer {
+      font-size: 144px;
+      font-weight: 700;
+      color: #2563eb;
+      margin: 56px 0;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 4px;
+    }
+
+    .recording-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 24px;
+      background: #ef4444;
+      color: white;
+      padding: 32px 56px;
+      border-radius: 56px;
+      font-size: 40px;
+      font-weight: 600;
+    }
+
+    .recording-dot {
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .recording-info {
+      margin-top: 36px;
+      color: #6b7280;
+      font-size: 38px;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 36px;
+      margin: 52px 0;
+    }
+
+    .photo-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 28px;
+      overflow: hidden;
+      border: 8px solid transparent;
+      transition: all 0.3s;
+      background: #f3f4f6;
+    }
+
+    .photo-item.selected {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.2);
+    }
+
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-item .select-indicator {
+      position: absolute;
+      top: 28px;
+      right: 28px;
+      width: 64px;
+      height: 64px;
+      background: white;
+      border: 6px solid #d1d5db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .photo-item.selected .select-indicator {
+      background: #2563eb;
+      border-color: #2563eb;
+    }
+
+    .photo-item.selected .select-indicator::after {
+      content: '✓';
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 112px 52px;
+    }
+
+    .spinner {
+      width: 140px;
+      height: 140px;
+      border: 12px solid #e5e7eb;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 56px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 40px;
+      color: #6b7280;
+      margin-top: 36px;
+      line-height: 1.5;
+    }
+
+    .minutes-preview {
+      background: #f9fafb;
+      border-radius: 28px;
+      padding: 52px;
+      margin: 52px 0;
+      max-height: 900px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 38px;
+      line-height: 1.7;
+      color: #374151;
+      border: 4px solid #e5e7eb;
+    }
+
+    .alert {
+      padding: 40px 44px;
+      border-radius: 26px;
+      margin-bottom: 52px;
+      font-size: 40px;
+      line-height: 1.6;
+    }
+
+    .alert-info {
+      background: #dbeafe;
+      color: #1e40af;
+      border-left: 10px solid #2563eb;
+    }
+
+    .alert-success {
+      background: #d1fae5;
+      color: #065f46;
+      border-left: 10px solid #10b981;
+    }
+
+    .alert-danger {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left: 10px solid #ef4444;
+    }
+
+    .photo-count {
+      text-align: center;
+      margin: 36px 0;
+      font-size: 38px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .photo-empty {
+      text-align: center;
+      padding: 112px 52px;
+      color: #9ca3af;
+      font-size: 38px;
+    }
+
+    /* 카메라 모달 */
+    .camera-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
       z-index: 1000;
-    }
-    .save-indicator.show { opacity: 1; }
-
-    /* 청크 카운터 */
-    .chunk-info {
-      font-size: 13px; color: #6b7280; margin-top: 8px;
+      flex-direction: column;
     }
 
-    /* 화면 잠금 경고 */
-    .wakelock-status {
-      font-size: 13px; margin-top: 6px;
-      padding: 4px 10px; border-radius: 10px; display: inline-block;
+    .camera-modal.active {
+      display: flex;
     }
-    .wakelock-on { background: #d1fae5; color: #065f46; }
-    .wakelock-off { background: #fee2e2; color: #991b1b; }
+
+    .camera-preview {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .camera-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .camera-controls {
+      padding: 40px;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .camera-btn {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 6px solid white;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .camera-btn.capture {
+      width: 140px;
+      height: 140px;
+      background: #ef4444;
+      border-color: white;
+    }
+
+    /* 입력 필드 확대 방지 (iOS) */
+    input, textarea, select {
+      font-size: 40px !important;
+    }
+
+    /* 스크롤바 스타일 */
+    ::-webkit-scrollbar {
+      width: 14px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>📝 스마트 회의록</h1>
-
-    <!-- 복구 배너 -->
-    <div id="recoveryBanner" class="recovery-banner">
-      <h3>⚠️ 이전 녹음이 감지되었습니다</h3>
-      <p id="recoveryInfo">이전에 진행 중이던 녹음이 저장되어 있습니다. 이어서 처리하시겠습니까?</p>
-      <div class="recovery-buttons">
-        <button class="btn btn-warning" onclick="recoverRecording()">📤 이전 녹음 처리하기</button>
-        <button class="btn btn-danger" onclick="discardRecovery()">🗑️ 삭제하기</button>
-      </div>
+    <div class="header">
+      <h1>📝 스마트 회의록</h1>
+      <p>AI 기반 자동 회의록 생성</p>
     </div>
 
-    <!-- 입력 폼 -->
-    <div id="inputForm">
-      <div class="form-group">
-        <label>📅 회의 날짜</label>
-        <input type="date" id="meetingDate" required>
-      </div>
-      <div class="form-group">
-        <label>🕐 회의 시간</label>
-        <input type="time" id="meetingTime" required>
-      </div>
-      <div class="form-group">
-        <label>📍 회의 장소</label>
-        <input type="text" id="meetingLocation" placeholder="예: 본사 3층 회의실" required>
-      </div>
-      <div class="form-group">
-        <label>👥 참석자</label>
-        <input type="text" id="meetingAttendees" placeholder="예: 김철수, 이영희" required>
-      </div>
-      <div class="form-group">
-        <label>🎯 회의 목적</label>
-        <textarea id="meetingPurpose" placeholder="회의 목적을 간단히 작성" required></textarea>
-      </div>
-      <button class="btn btn-primary" onclick="startRecording()">🎤 회의 시작하기</button>
-    </div>
+    <div class="content">
+      <!-- Step 1: 회의 정보 입력 -->
+      <div id="step1" class="step active">
+        <div class="alert alert-info">
+          회의 정보를 입력하고 시작해주세요
+        </div>
 
-    <!-- 녹음 중 -->
-    <div id="recordingStatus" class="recording-status">
-      <div>
-        <span class="recording-dot"></span>
-        <strong>녹음 중</strong>
+        <div class="form-group">
+          <label for="meetingDate">📅 회의 날짜</label>
+          <input type="date" id="meetingDate" required>
+        </div>
+
+        <div class="form-group">
+          <label for="meetingTime">🕐 회의 시간</label>
+          <input type="time" id="meetingTime" required>
+        </div>
+
+        <div class="form-group">
+          <label for="meetingLocation">📍 회의 장소</label>
+          <input type="text" id="meetingLocation" placeholder="예: 합사 회의실" required>
+        </div>
+
+        <div class="form-group">
+          <label for="meetingAttendees">👥 참석자</label>
+          <input type="text" id="meetingAttendees" placeholder="예: 김원경, 조정일, 정동희" required>
+        </div>
+
+        <div class="form-group">
+          <label for="meetingPurpose">🎯 회의 목적</label>
+          <textarea id="meetingPurpose" placeholder="회의 목적을 간단히 작성해주세요" required></textarea>
+        </div>
+
+        <button class="btn btn-primary" onclick="startMeeting()">
+          회의 시작하기
+        </button>
       </div>
-      <div class="timer" id="timer">00:00</div>
-      <p>회의 내용이 녹음되고 있습니다</p>
-      <div id="wakeLockStatus" class="wakelock-status wakelock-off">🔓 화면잠금 방지: 대기중</div>
-      <div class="chunk-info" id="chunkInfo">저장된 청크: 0개</div>
-      <button class="btn btn-danger" onclick="stopRecording()">⏹️ 녹음 종료</button>
-    </div>
 
-    <!-- 로딩 -->
-    <div id="loading" class="loading hidden">
-      <div class="spinner"></div>
-      <p>AI가 회의록을 생성하고 있습니다...</p>
-    </div>
+      <!-- Step 2: 회의 진행 -->
+      <div id="step2" class="step">
+        <div class="recording-status">
+          <div class="recording-indicator">
+            <span class="recording-dot"></span>
+            녹음 중
+          </div>
+          <div class="timer" id="timer">00:00</div>
+          <div class="recording-info">회의 내용이 녹음되고 있습니다</div>
+        </div>
 
-    <!-- 결과 -->
-    <div id="result" class="hidden">
-      <h2>✅ 회의록 생성 완료!</h2>
-      <div id="minutesPreview" class="result"></div>
-      <button class="btn btn-primary" onclick="resetApp()">새 회의 시작하기</button>
+        <button class="btn btn-primary" onclick="openCamera()">
+          📷 사진 촬영하기
+        </button>
+
+        <div class="photo-count" id="photoCount">촬영된 사진: 0장</div>
+        
+        <div id="photoGrid" class="photo-grid"></div>
+
+        <button class="btn btn-danger" onclick="endMeeting()">
+          회의 종료하기
+        </button>
+      </div>
+
+      <!-- Step 3: 사진 선택 -->
+      <div id="step3" class="step">
+        <div class="alert alert-info">
+          회의록에 포함할 사진 1장을 선택해주세요
+        </div>
+
+        <div id="photoSelection" class="photo-grid"></div>
+
+        <button class="btn btn-success" onclick="generateMinutes()">
+          회의록 생성하기
+        </button>
+      </div>
+
+      <!-- Step 4: 결과 화면 -->
+      <div id="step4" class="step">
+        <div id="loadingArea" class="loading">
+          <div class="spinner"></div>
+          <div class="loading-text">AI가 회의록을 생성하고 있습니다...</div>
+          <div class="loading-text" style="font-size: 34px; margin-top: 8px; color: #9ca3af;">
+            녹음 파일 업로드 → 음성 전사 → 회의록 작성 순으로 진행됩니다<br>
+            (회의 길이에 따라 1~3분 소요될 수 있습니다)
+          </div>
+        </div>
+
+        <div id="resultArea" style="display: none;">
+          <div class="alert alert-success">
+            ✅회의록이 성공적으로 생성되었습니다!
+          </div>
+
+          <div class="minutes-preview" id="minutesPreview"></div>
+
+          <button class="btn btn-primary" onclick="resetApp()">
+            새 회의 시작하기
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 저장 표시기 -->
-  <div id="saveIndicator" class="save-indicator">💾 자동저장됨</div>
+  <!-- 카메라 모달 -->
+  <div id="cameraModal" class="camera-modal">
+    <div class="camera-preview">
+      <video id="cameraVideo" autoplay playsinline muted></video>
+    </div>
+    <div class="camera-controls">
+      <button class="camera-btn" onclick="closeCamera()">✕</button>
+      <button class="camera-btn capture" onclick="capturePhoto()">📷</button>
+      <button class="camera-btn" onclick="switchCamera()">🔄</button>
+    </div>
+  </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyujvXfa758yakJI6hAzSkn5MmOIuzatjI9sGls-geGnHEHu5GDBaM6we6zGbqIaC-o/exec';
-
-    const DB_NAME = 'SmartMeetingDB';
-    const DB_VERSION = 1;
-    const STORE_CHUNKS = 'audioChunks';
-    const STORE_META = 'meetingMeta';
-
-    let db = null;
-    let mediaRecorder;
+    // ============================================
+    // 전역 변수
+    // ============================================
+    let currentStep = 1;
     let recordingStartTime;
     let timerInterval;
-    let wakeLock = null;
-    let chunkIndex = 0;
-    let currentMeetingId = null;
+    let mediaRecorder;
+    let audioChunks = [];
+    let photos = [];
+    let selectedPhoto = null;
+    let audioStream = null;
+    let cameraStream = null;
+    let currentCamera = 'environment'; // 'user' 또는 'environment'
+    let recordedMimeType = 'audio/webm'; // ✅ [수정] 실제 녹음된 MIME 타입 저장용
 
-    // ── IndexedDB 초기화 ──────────────────────────────────────
-    function initDB() {
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, DB_VERSION);
-        req.onupgradeneeded = (e) => {
-          const d = e.target.result;
-          if (!d.objectStoreNames.contains(STORE_CHUNKS)) {
-            d.createObjectStore(STORE_CHUNKS, { keyPath: 'id', autoIncrement: true });
-          }
-          if (!d.objectStoreNames.contains(STORE_META)) {
-            d.createObjectStore(STORE_META, { keyPath: 'key' });
-          }
-        };
-        req.onsuccess = (e) => { db = e.target.result; resolve(); };
-        req.onerror = (e) => reject(e);
-      });
-    }
-
-    function dbPut(store, data) {
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(store, 'readwrite');
-        const req = tx.objectStore(store).put(data);
-        req.onsuccess = () => resolve();
-        req.onerror = (e) => reject(e);
-      });
-    }
-
-    function dbGetAll(store) {
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(store, 'readonly');
-        const req = tx.objectStore(store).getAll();
-        req.onsuccess = (e) => resolve(e.target.result);
-        req.onerror = (e) => reject(e);
-      });
-    }
-
-    function dbGet(store, key) {
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(store, 'readonly');
-        const req = tx.objectStore(store).get(key);
-        req.onsuccess = (e) => resolve(e.target.result);
-        req.onerror = (e) => reject(e);
-      });
-    }
-
-    function dbClear(store) {
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(store, 'readwrite');
-        const req = tx.objectStore(store).clear();
-        req.onsuccess = () => resolve();
-        req.onerror = (e) => reject(e);
-      });
-    }
-
-    // ── 자동저장 표시기 ──────────────────────────────────────
-    function showSaveIndicator() {
-      const el = document.getElementById('saveIndicator');
-      el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 2000);
-    }
-
-    // ── Wake Lock (화면 꺼짐 방지) ───────────────────────────
-    async function requestWakeLock() {
-      if ('wakeLock' in navigator) {
-        try {
-          wakeLock = await navigator.wakeLock.request('screen');
-          document.getElementById('wakeLockStatus').textContent = '🔒 화면잠금 방지: 활성화';
-          document.getElementById('wakeLockStatus').className = 'wakelock-status wakelock-on';
-          // 화면이 다시 켜질 때 재취득
-          document.addEventListener('visibilitychange', async () => {
-            if (document.visibilityState === 'visible' && wakeLock !== null) {
-              try {
-                wakeLock = await navigator.wakeLock.request('screen');
-              } catch(e) {}
-            }
-          });
-        } catch (e) {
-          console.warn('Wake Lock 사용 불가:', e);
-          document.getElementById('wakeLockStatus').textContent = '⚠️ 화면잠금 방지: 미지원(화면 꺼지지 않게 주의)';
+    // ============================================
+    // 로컬 스토리지에 상태 저장
+    // ============================================
+    function saveState() {
+      const state = {
+        currentStep,
+        recordingStartTime,
+        photos,
+        meetingData: {
+          date: document.getElementById('meetingDate').value,
+          time: document.getElementById('meetingTime').value,
+          location: document.getElementById('meetingLocation').value,
+          attendees: document.getElementById('meetingAttendees').value,
+          purpose: document.getElementById('meetingPurpose').value
         }
-      } else {
-        document.getElementById('wakeLockStatus').textContent = '⚠️ 화면잠금 방지: 미지원(화면 꺼지지 않게 주의)';
+      };
+      sessionStorage.setItem('meetingState', JSON.stringify(state));
+    }
+
+    function loadState() {
+      const saved = sessionStorage.getItem('meetingState');
+      if (saved) {
+        const state = JSON.parse(saved);
+        currentStep = state.currentStep;
+        recordingStartTime = state.recordingStartTime;
+        photos = state.photos || [];
+        
+        if (state.meetingData) {
+          document.getElementById('meetingDate').value = state.meetingData.date;
+          document.getElementById('meetingTime').value = state.meetingData.time;
+          document.getElementById('meetingLocation').value = state.meetingData.location;
+          document.getElementById('meetingAttendees').value = state.meetingData.attendees;
+          document.getElementById('meetingPurpose').value = state.meetingData.purpose;
+        }
       }
     }
 
-    function releaseWakeLock() {
-      if (wakeLock) { wakeLock.release(); wakeLock = null; }
+    // ============================================
+    // Step 관리
+    // ============================================
+    function showStep(stepNumber) {
+      document.querySelectorAll('.step').forEach(step => {
+        step.classList.remove('active');
+      });
+      document.getElementById(`step${stepNumber}`).classList.add('active');
+      currentStep = stepNumber;
+      window.scrollTo(0, 0);
+      saveState();
     }
 
-    // ── 앱 초기화 ─────────────────────────────────────────────
-    window.onload = async function() {
-      await initDB();
-
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('meetingDate').value = today;
-      const now = new Date();
-      document.getElementById('meetingTime').value =
-        `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-      // 미완료 녹음 확인
-      await checkForRecovery();
-    };
-
-    // ── 복구 확인 ─────────────────────────────────────────────
-    async function checkForRecovery() {
-      const meta = await dbGet(STORE_META, 'current');
-      const chunks = await dbGetAll(STORE_CHUNKS);
-      if (meta && chunks.length > 0) {
-        const info = meta.data;
-        document.getElementById('recoveryInfo').textContent =
-          `📅 ${info.date} ${info.time} | 📍 ${info.location} | 청크 ${chunks.length}개 저장됨`;
-        document.getElementById('recoveryBanner').classList.add('show');
-      }
-    }
-
-    // ── 이전 녹음 처리 ────────────────────────────────────────
-    async function recoverRecording() {
-      document.getElementById('recoveryBanner').classList.remove('show');
-      document.getElementById('inputForm').classList.add('hidden');
-      document.getElementById('loading').classList.remove('hidden');
-
-      const meta = await dbGet(STORE_META, 'current');
-      const chunks = await dbGetAll(STORE_CHUNKS);
-
-      const blobs = chunks.map(c => new Blob([c.data], { type: 'audio/webm' }));
-      const audioBlob = new Blob(blobs, { type: 'audio/webm' });
-
-      await sendToServer(meta.data, audioBlob);
-    }
-
-    async function discardRecovery() {
-      await dbClear(STORE_CHUNKS);
-      await dbClear(STORE_META);
-      document.getElementById('recoveryBanner').classList.remove('show');
-    }
-
-    // ── 녹음 시작 ─────────────────────────────────────────────
-    async function startRecording() {
-      const date      = document.getElementById('meetingDate').value;
-      const time      = document.getElementById('meetingTime').value;
-      const location  = document.getElementById('meetingLocation').value;
+    // ============================================
+    // Step 1: 회의 시작
+    // ============================================
+    function startMeeting() {
+      const date = document.getElementById('meetingDate').value;
+      const time = document.getElementById('meetingTime').value;
+      const location = document.getElementById('meetingLocation').value;
       const attendees = document.getElementById('meetingAttendees').value;
-      const purpose   = document.getElementById('meetingPurpose').value;
+      const purpose = document.getElementById('meetingPurpose').value;
 
       if (!date || !time || !location || !attendees || !purpose) {
         alert('모든 항목을 입력해주세요.');
         return;
       }
 
-      // 기존 데이터 초기화
-      await dbClear(STORE_CHUNKS);
-      await dbClear(STORE_META);
-      chunkIndex = 0;
-      currentMeetingId = Date.now();
+      saveState();
+      startRecording();
+      showStep(2);
+    }
 
-      // 메타데이터 저장
-      await dbPut(STORE_META, {
-        key: 'current',
-        data: { date, time, location, attendees, purpose, meetingId: currentMeetingId }
-      });
+    // ============================================
+    // Step 2: 녹음 및 사진 촬영
+    // ============================================
 
+    // ✅ [수정] startRecording() - MIME 타입 자동 감지 + 에러 종류별 메시지 분리
+    async function startRecording() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream, { mimeType: getSupportedMimeType() });
+        // ① mediaDevices API 지원 여부 체크
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert('이 브라우저는 마이크를 지원하지 않습니다.\nChrome 브라우저를 사용해주세요.');
+          return;
+        }
 
-        mediaRecorder.ondataavailable = async (event) => {
-          if (event.data.size > 0) {
-            // ArrayBuffer로 변환해 IndexedDB에 저장
-            const buf = await event.data.arrayBuffer();
-            await dbPut(STORE_CHUNKS, { index: chunkIndex++, data: buf });
-            document.getElementById('chunkInfo').textContent = `저장된 청크: ${chunkIndex}개`;
-            showSaveIndicator();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioStream = stream;
+
+        // ② 브라우저별 지원 MIME 타입 자동 선택 (우선순위 순)
+        let mimeType = '';
+        const mimeTypes = [
+          'audio/webm;codecs=opus',
+          'audio/webm',
+          'audio/mp4',
+          'audio/ogg;codecs=opus',
+          'audio/ogg'
+        ];
+        for (const type of mimeTypes) {
+          if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(type)) {
+            mimeType = type;
+            break;
+          }
+        }
+
+        const options = mimeType ? { mimeType } : {};
+        mediaRecorder = new MediaRecorder(stream, options);
+
+        // ③ 실제 사용된 mimeType 저장 (Blob 생성 시 사용)
+        recordedMimeType = mediaRecorder.mimeType || mimeType || 'audio/webm';
+        console.log('녹음 MIME 타입:', recordedMimeType);
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            audioChunks.push(event.data);
+            // 청크 누적 크기 표시 (디버깅용)
+            const totalSize = audioChunks.reduce((sum, c) => sum + c.size, 0);
+            console.log(`오디오 청크 누적: ${audioChunks.length}개, 총 크기: ${(totalSize/1024/1024).toFixed(2)}MB`);
           }
         };
 
-        // 30초마다 청크 저장
-        mediaRecorder.start(30000);
+        // 10초 간격으로 청크 수집 (1초 간격은 불필요하게 청크가 많아져 처리 오류 유발)
+        mediaRecorder.start(10000);
         recordingStartTime = Date.now();
-
-        document.getElementById('inputForm').classList.add('hidden');
-        document.getElementById('recordingStatus').classList.add('active');
-
         timerInterval = setInterval(updateTimer, 1000);
-        await requestWakeLock();
 
       } catch (error) {
-        alert('마이크 권한을 허용해주세요.\n\n설정 → 사이트 설정 → 마이크 → 허용');
-      }
-    }
+        console.error('녹음 오류:', error.name, error.message);
 
-    function getSupportedMimeType() {
-      const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
-      for (const type of types) {
-        if (MediaRecorder.isTypeSupported(type)) return type;
+        // ④ 에러 종류별 메시지 분리
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          alert('마이크 권한이 거부되었습니다.\n브라우저 주소창 왼쪽 자물쇠(🔒) 아이콘을 눌러\n마이크 권한을 허용해주세요.');
+        } else if (error.name === 'NotFoundError') {
+          alert('마이크를 찾을 수 없습니다.\n기기에 마이크가 연결되어 있는지 확인해주세요.');
+        } else if (error.name === 'NotSupportedError' || error.name === 'NotReadableError') {
+          alert('이 브라우저는 녹음 기능을 지원하지 않습니다.\n최신 Chrome 브라우저를 사용해주세요.');
+        } else {
+          alert('마이크 오류가 발생했습니다.\n오류 코드: ' + error.name + '\n' + error.message);
+        }
       }
-      return '';
     }
 
     function updateTimer() {
       const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
-      const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
-      const s = (elapsed % 60).toString().padStart(2, '0');
-      document.getElementById('timer').textContent = `${m}:${s}`;
+      const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+      const seconds = (elapsed % 60).toString().padStart(2, '0');
+      document.getElementById('timer').textContent = `${minutes}:${seconds}`;
     }
 
-    // ── 녹음 중지 ─────────────────────────────────────────────
-    async function stopRecording() {
-      if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+    // ============================================
+    // 카메라 기능
+    // ============================================
 
-      mediaRecorder.stop();
-      clearInterval(timerInterval);
-      releaseWakeLock();
-
-      mediaRecorder.onstop = async () => {
-        document.getElementById('recordingStatus').classList.remove('active');
-        document.getElementById('loading').classList.remove('hidden');
-
-        const meta   = await dbGet(STORE_META, 'current');
-        const chunks = await dbGetAll(STORE_CHUNKS);
-
-        if (chunks.length === 0) {
-          showResult('녹음된 내용이 없습니다. 다시 시도해주세요.');
+    // ✅ [수정] openCamera() - video.play() 명시 호출 + 에러 종류별 메시지 분리
+    async function openCamera() {
+      try {
+        // ① mediaDevices API 지원 여부 체크
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert('이 브라우저는 카메라를 지원하지 않습니다.\nChrome 브라우저를 사용해주세요.');
           return;
         }
 
-        const blobs = chunks.map(c => new Blob([c.data], { type: 'audio/webm' }));
-        const audioBlob = new Blob(blobs, { type: 'audio/webm' });
+        const modal = document.getElementById('cameraModal');
+        const video = document.getElementById('cameraVideo');
 
-        await sendToServer(meta.data, audioBlob);
-      };
-    }
-
-    // ── 서버 전송 ─────────────────────────────────────────────
-    async function sendToServer(meetingData, audioBlob) {
-      try {
-        const audioBase64 = await blobToBase64(audioBlob);
-
-        const payload = {
-          date:        meetingData.date,
-          time:        meetingData.time,
-          location:    meetingData.location,
-          attendees:   meetingData.attendees,
-          purpose:     meetingData.purpose,
-          audioBase64: audioBase64.split(',')[1],
-          photo: ''
-        };
-
-        await fetch(API_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: currentCamera },
+          audio: false
         });
 
-        // 전송 성공 후 DB 정리
-        await dbClear(STORE_CHUNKS);
-        await dbClear(STORE_META);
+        video.srcObject = cameraStream;
 
-        showResult('✅ 회의록이 생성되어 Google Sheets에 저장되었습니다!\n\n시트를 확인해주세요.');
+        // ② 핵심 수정: video.play() 명시적 호출
+        //    (브라우저 자동재생 정책 강화로 autoplay 속성만으로는 동작 보장 안됨)
+        try {
+          await video.play();
+        } catch (playError) {
+          // play() 실패는 치명적이지 않으므로 경고만 출력하고 계속 진행
+          console.warn('video.play() 자동실행 오류 (무시하고 계속):', playError);
+        }
+
+        modal.classList.add('active');
 
       } catch (error) {
-        // 전송 실패해도 DB에는 남아있어 나중에 복구 가능
-        showResult('❌ 전송 중 오류가 발생했습니다.\n다음에 앱을 열면 자동으로 복구를 시도합니다.\n\n오류: ' + error.message);
+        console.error('카메라 오류:', error.name, error.message);
+
+        // ③ 에러 종류별 메시지 분리
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          alert('카메라 권한이 거부되었습니다.\n브라우저 주소창 왼쪽 자물쇠(🔒) 아이콘을 눌러\n카메라 권한을 허용해주세요.');
+        } else if (error.name === 'NotFoundError') {
+          alert('카메라를 찾을 수 없습니다.\n기기에 카메라가 연결되어 있는지 확인해주세요.');
+        } else if (error.name === 'OverconstrainedError') {
+          // ④ 후면 카메라 없을 시 전면 카메라로 자동 재시도
+          console.warn('요청한 카메라 없음, 전면 카메라로 재시도');
+          currentCamera = 'user';
+          await openCamera();
+        } else {
+          alert('카메라 오류가 발생했습니다.\n오류 코드: ' + error.name + '\n' + error.message);
+        }
       }
     }
 
+    function closeCamera() {
+      const modal = document.getElementById('cameraModal');
+      const video = document.getElementById('cameraVideo');
+      
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      
+      video.srcObject = null;
+      modal.classList.remove('active');
+    }
+
+    function capturePhoto() {
+      const video = document.getElementById('cameraVideo');
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      
+      const photoData = canvas.toDataURL('image/jpeg', 0.8);
+      photos.push(photoData);
+      
+      displayPhotos();
+      updatePhotoCount();
+      closeCamera();
+      saveState();
+    }
+
+    async function switchCamera() {
+      currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
+      closeCamera();
+      await openCamera();
+    }
+
+    function updatePhotoCount() {
+      document.getElementById('photoCount').textContent = `촬영된 사진: ${photos.length}장`;
+    }
+
+    function displayPhotos() {
+      const grid = document.getElementById('photoGrid');
+      grid.innerHTML = '';
+      
+      if (photos.length === 0) {
+        grid.innerHTML = '<div class="photo-empty" style="grid-column: 1 / -1;">아직 촬영된 사진이 없습니다</div>';
+        return;
+      }
+      
+      photos.forEach((photo, index) => {
+        const div = document.createElement('div');
+        div.className = 'photo-item';
+        div.innerHTML = `<img src="${photo}" alt="회의 사진 ${index + 1}">`;
+        grid.appendChild(div);
+      });
+    }
+
+    function endMeeting() {
+      if (photos.length === 0) {
+        alert('최소 1장의 사진을 촬영해주세요.');
+        return;
+      }
+
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+      
+      if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+      }
+      
+      clearInterval(timerInterval);
+      
+      showPhotoSelection();
+      showStep(3);
+    }
+
+    // ============================================
+    // Step 3: 사진 선택
+    // ============================================
+    function showPhotoSelection() {
+      const selection = document.getElementById('photoSelection');
+      selection.innerHTML = '';
+      
+      photos.forEach((photo, index) => {
+        const div = document.createElement('div');
+        div.className = 'photo-item';
+        div.onclick = () => selectPhoto(index);
+        div.innerHTML = `
+          <img src="${photo}" alt="사진 ${index + 1}">
+          <div class="select-indicator"></div>
+        `;
+        selection.appendChild(div);
+      });
+    }
+
+    function selectPhoto(index) {
+      selectedPhoto = photos[index];
+      
+      document.querySelectorAll('#photoSelection .photo-item').forEach((item, i) => {
+        if (i === index) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+    }
+
+    // ============================================
+    // Step 4: 회의록 생성
+    // ============================================
+    async function generateMinutes() {
+      if (!selectedPhoto) {
+        alert('사진을 선택해주세요.');
+        return;
+      }
+
+      showStep(4);
+
+      // 오디오 Blob 생성
+      const audioBlob = new Blob(audioChunks, { type: recordedMimeType || 'audio/webm' });
+      const audioSizeMB = (audioBlob.size / 1024 / 1024).toFixed(2);
+      console.log(`최종 오디오 크기: ${audioSizeMB}MB, MIME: ${recordedMimeType}`);
+
+      // 로딩 메시지 업데이트
+      document.querySelector('#loadingArea .loading-text').textContent =
+        `AI가 회의록을 생성하고 있습니다... (오디오 ${audioSizeMB}MB)`;
+
+      const audioBase64 = await blobToBase64(audioBlob);
+
+      const meetingData = {
+        date: document.getElementById('meetingDate').value,
+        time: document.getElementById('meetingTime').value,
+        location: document.getElementById('meetingLocation').value,
+        attendees: document.getElementById('meetingAttendees').value,
+        purpose: document.getElementById('meetingPurpose').value,
+        audioBase64: audioBase64.split(',')[1],
+        audioMimeType: recordedMimeType || 'audio/webm',
+        photo: selectedPhoto
+      };
+
+      console.log('=== 전송할 데이터 ===');
+      console.log('date:', meetingData.date);
+      console.log('audioMimeType:', meetingData.audioMimeType);
+      console.log('audioBase64 길이:', meetingData.audioBase64 ? meetingData.audioBase64.length : 'undefined');
+      console.log('photo 있음:', !!meetingData.photo);
+
+      if (!meetingData.date || !meetingData.audioBase64) {
+        alert('오류: 데이터가 제대로 생성되지 않았습니다.\ndate: ' + meetingData.date + '\naudio: ' + (meetingData.audioBase64 ? 'OK' : 'NONE'));
+        return;
+      }
+
+      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyujvXfa758yakJI6hAzSkn5MmOIuzatjI9sGls-geGnHEHu5GDBaM6we6zGbqIaC-o/exec';
+
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(meetingData)
+        });
+
+        if (!response.ok) {
+          throw new Error('서버 응답 오류: ' + response.status);
+        }
+
+        const result = await response.json();
+        onMinutesGenerated(result);
+
+      } catch (error) {
+        onError(error.toString());
+      }
+    }
+
+    function onMinutesGenerated(result) {
+      document.getElementById('loadingArea').style.display = 'none';
+      document.getElementById('resultArea').style.display = 'block';
+      
+      if (result.success) {
+        document.getElementById('minutesPreview').textContent = result.minutes;
+      } else {
+        document.querySelector('#resultArea .alert').className = 'alert alert-danger';
+        document.querySelector('#resultArea .alert').textContent = '❌ 오류: ' + result.error;
+      }
+    }
+
+    function onError(error) {
+      document.getElementById('loadingArea').style.display = 'none';
+      document.getElementById('resultArea').style.display = 'block';
+      document.querySelector('#resultArea .alert').className = 'alert alert-danger';
+      document.querySelector('#resultArea .alert').textContent = '❌ 오류: ' + error;
+    }
+
+    // ============================================
+    // 유틸리티
+    // ============================================
     function blobToBase64(blob) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -476,24 +950,72 @@
       });
     }
 
-    function showResult(message) {
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('result').classList.remove('hidden');
-      document.getElementById('minutesPreview').textContent = message;
-    }
-
-    async function resetApp() {
-      await dbClear(STORE_CHUNKS);
-      await dbClear(STORE_META);
-      chunkIndex = 0;
-
-      document.getElementById('result').classList.add('hidden');
-      document.getElementById('inputForm').classList.remove('hidden');
+    function resetApp() {
+      if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
+      }
+      
+      if (mediaRecorder) {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
+        mediaRecorder = null;
+      }
+      
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      
+      currentStep = 1;
+      audioChunks = [];
+      photos = [];
+      selectedPhoto = null;
+      recordedMimeType = 'audio/webm'; // ✅ [수정] 초기화 추가
+      
+      document.getElementById('meetingDate').value = '';
+      document.getElementById('meetingTime').value = '';
       document.getElementById('meetingLocation').value = '';
       document.getElementById('meetingAttendees').value = '';
       document.getElementById('meetingPurpose').value = '';
-      document.getElementById('chunkInfo').textContent = '저장된 청크: 0개';
+      
+      sessionStorage.removeItem('meetingState');
+      showStep(1);
     }
+
+    // ============================================
+    // 초기화
+    // ============================================
+    window.onload = function() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('meetingDate').value = today;
+      
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('meetingTime').value = `${hours}:${minutes}`;
+      
+      // 저장된 상태 복구
+      loadState();
+      if (currentStep > 1 && currentStep < 4) {
+        showStep(currentStep);
+        if (currentStep === 2) {
+          displayPhotos();
+          updatePhotoCount();
+        }
+      }
+    };
+
+    // 페이지 언로드 시 정리
+    window.addEventListener('beforeunload', () => {
+      if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+      }
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    });
   </script>
 </body>
 </html>
